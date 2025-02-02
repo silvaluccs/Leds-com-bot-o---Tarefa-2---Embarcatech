@@ -1,11 +1,46 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "hardware/timer.h"
 
+typedef enum cor { VERMELHO, AZUL, VERDE } cor;
 
+const uint pino_botao = 5;
+const uint pino_led_vermelho = 11;
+const uint pino_led_azul = 12;
+const uint pino_led_verde = 13;
+
+absolute_time_t turn_off_time;
+
+bool mudar_led = false;
+
+bool repeating_timer_callback(struct repeating_timer *t);
+void gpio_irq_handler(uint gpio, uint32_t events);
 
 int main()
 {
     stdio_init_all();
+
+    gpio_init(pino_botao);
+    gpio_set_dir(pino_botao, GPIO_IN);
+    gpio_pull_up(pino_botao);
+
+    gpio_init(pino_led_vermelho);
+    gpio_set_dir(pino_led_vermelho, GPIO_OUT);
+    
+    gpio_init(pino_led_azul);
+    gpio_set_dir(pino_led_azul, GPIO_OUT);
+
+    gpio_init(pino_led_verde);
+    gpio_set_dir(pino_led_verde, GPIO_OUT);
+    
+    gpio_put_all(false);
+
+
+      // Configura um temporizador repetitivo que chama a função de callback a cada 1 segundo (1000 ms).
+    struct repeating_timer timer;
+    add_repeating_timer_ms(3000, repeating_timer_callback, NULL, &timer);
+
+
 
     while (true) {
         printf("Hello, world!\n");
