@@ -11,7 +11,9 @@ const uint pino_led_verde = 13;
 
 absolute_time_t turn_off_time;
 
-bool mudar_led = false;
+bool ligar_todos_leds = false;  
+bool desativar_leds = false;
+static cor cor_atual_para_apagar = VERMELHO;
 
 bool repeating_timer_callback(struct repeating_timer *t);
 void gpio_irq_handler(uint gpio, uint32_t events);
@@ -36,7 +38,6 @@ int main()
     gpio_put_all(false);
 
 
-      // Configura um temporizador repetitivo que chama a função de callback a cada 1 segundo (1000 ms).
     struct repeating_timer timer;
     add_repeating_timer_ms(3000, repeating_timer_callback, NULL, &timer);
 
@@ -46,4 +47,27 @@ int main()
         printf("Hello, world!\n");
         sleep_ms(1000);
     }
+}
+
+
+bool repeating_timer_callback(struct repeating_timer *t) {
+    if (!desativar_leds) {return true;}
+
+    switch (cor_atual_para_apagar) {
+        case VERMELHO:
+            gpio_put(pino_led_vermelho, false);
+            cor_atual_para_apagar = AZUL;
+            break;
+        case AZUL:
+            gpio_put(pino_led_azul, false);
+            cor_atual_para_apagar = VERDE;
+            break;
+        case VERDE:
+            gpio_put(pino_led_verde, false);
+            cor_atual_para_apagar = VERMELHO;
+            desativar_leds = false;
+            break;
+    }
+
+    return true;
 }
